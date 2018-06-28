@@ -1,20 +1,14 @@
 # Transactor
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Gitter](https://badges.gitter.im/metacurrency/holochain.svg)](https://gitter.im/metacurrency/holochain?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
 
 **Asset backed mutual-credit currency built on holochain**
 Prototype of mutual-credit currency with reserve accounts and pre-authorization.
 
 ## Installation
 
-Prerequisite: [Install holochain](https://github.com/metacurrency/holochain/#installation) on your machine.
+Prerequisite: [Install holochain](https://github.com/holochain/holochain-proto) on your machine.
 You can install transactor very simply with this:
-
-``` shell
-hcdev init -cloneExample=transactor
-
-```
 
 ## Usage
 
@@ -34,16 +28,25 @@ Serving holochain with DNA hash:QmZYxoxcqgCp6Xf6xVe8ptzPkmH8QMzxqp4r49QYpS2fEF o
 Then simply point your browser to http://localhost:4141 access the UI.
 
 ### Tests
-To run all the stand alone tests:
+To run all the tests:
 
 ``` shell
 hcdev test
+hcdev scenario simple-transaction
+```
+
+or
+
+``` shell
+npm install
+npm test
+npm run hcdev-test
 ```
 
 ## Contribute
-We welcome pull requests and issue tickets.  Find us on [gitter](https://gitter.im/metacurrency/holochain) to chat.
+We welcome pull requests and issue tickets.
 
-Contributors to this project are expected to follow our [development protocols & practices](https://github.com/metacurrency/holochain/wiki/Development-Protocols).
+Contributors to this project are expected to follow our [development protocols & practices](https://github.com/holochain/holochain-proto/wiki/Development-Protocols).
 
 
 ## License

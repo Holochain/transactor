@@ -1,0 +1,42 @@
+{
+  "name": "transactor",
+  "version": "0.0.1",
+  "description": "Asset backed mutual-credit currency built on holochain",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holochain/transactor.git"
+  },
+  "scripts": {
+    "test": "standard --fix '**/*.js' && dna-to-openapi -d ui/api-docs.html",
+    "hcdev-test": "hcdev test && hcdev scenario simple-transaction"
+  },
+  "devDependencies": {
+    "@holochain/dna-to-openapi": "^0.2.1",
+    "standard": "^11.0.1"
+  },
+  "standard": {
+    "global": [
+      "HC",
+      "App",
+      "property",
+      "debug",
+      "makeHash",
+      "getBridges",
+      "sign",
+      "verifySignature",
+      "send",
+      "call",
+      "bridge",
+      "commit",
+      "migrate",
+      "query",
+      "get",
+      "update",
+      "updateAgent",
+      "remove",
+      "getLinks",
+      "bundleStart",
+      "bundleClose"
+    ]
+  }
+}
