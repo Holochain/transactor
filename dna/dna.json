@@ -9,7 +9,8 @@
     "Properties": {
         "description": "Asset backed mutual-credit currency built on holochain",
         "language": "en",
-        "creditLimit":"500"
+        "maxTransactionAmount": "2d",
+        "maxTransactionFee": "a"
     },
     "PropertiesSchemaFile": "properties_schema.json",
     "Zomes": [

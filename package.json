@@ -7,14 +7,27 @@
     "url": "git+https://github.com/holochain/transactor.git"
   },
   "scripts": {
-    "test": "standard --fix '**/*.js' && dna-to-openapi -d ui/api-docs.html",
+    "build-transaction-js": "rollup -c && babel -o dna/transaction/transaction.js dna-tmp/transaction.js",
+    "build": "npm run build-transaction-js",
+    "test": "standard --fix '**/*.js' && npm run build && dna-to-openapi -d ui/api-docs.html",
     "hcdev-test": "hcdev test && hcdev scenario simple-transaction"
   },
   "devDependencies": {
     "@holochain/dna-to-openapi": "^0.2.1",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "rollup": "^0.62.0",
+    "rollup-plugin-commonjs": "^9.1.3",
+    "rollup-plugin-node-resolve": "^3.3.0",
     "standard": "^11.0.1"
   },
   "standard": {
+    "ignore": [
+      "dna",
+      "dna-tmp"
+    ],
     "global": [
       "HC",
       "App",

@@ -12,8 +12,8 @@
           "type": "string"
         },
         "amount": {
-          "type": "number",
-          "exclusiveMinimum": 0
+          "type": "string",
+          "pattern": "^-?[a-f0-9]{1,12}$"
         },
         "description": {
           "type": "string"
@@ -35,8 +35,8 @@
           "type": "string"
         },
         "amount": {
-          "type": "number",
-          "exclusiveMinimum": 0
+          "type": "string",
+          "pattern": "^-?[a-f0-9]{1,12}$"
         },
         "description": {
           "type": "string"

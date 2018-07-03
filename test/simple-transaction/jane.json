@@ -4,7 +4,7 @@
       "Convey":"should start with zero balance",
       "Zome": "transaction",
       "FnName": "getBalance",
-      "Output": 0
+      "Output": "0"
     },
     {
       "Convey":"should get self hash",
@@ -17,7 +17,7 @@
       "Convey":"should have received funds from joe",
       "Zome": "transaction",
       "FnName": "getBalance",
-      "Output": 12.5
+      "Output": "1c"
     }
   ]
 }
