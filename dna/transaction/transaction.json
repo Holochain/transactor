@@ -9,7 +9,8 @@
       "type": "string"
     },
     "amount": {
-      "type": "number"
+      "type": "string",
+      "pattern": "^-?[a-f0-9]{1,12}$"
     },
     "description": {
       "type": "string"

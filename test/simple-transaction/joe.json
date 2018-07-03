@@ -4,7 +4,7 @@
       "Convey":"should start with zero balance",
       "Zome": "transaction",
       "FnName": "getBalance",
-      "Output": 0
+      "Output": "0"
     },
     {
       "Convey":"should get self hash",
@@ -20,16 +20,16 @@
       "Input": {
         "role": "spender",
         "to": "%jane_key%",
-        "amount": 12.5
+        "amount": "1c"
       },
       "Output": "%h%"
     },
     {
       "Time": 3000,
-      "Convey":"balance should now be -12.5",
+      "Convey":"balance should now be -1c",
       "Zome": "transaction",
       "FnName": "getBalance",
-      "Output": -12.5
+      "Output": "-1c"
     }
   ]
 }

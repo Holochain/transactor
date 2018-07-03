@@ -1,3 +1,4 @@
 agent.txt
 priv.key
 node_modules
+dna-tmp/*.js
