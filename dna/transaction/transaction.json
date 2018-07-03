@@ -13,12 +13,14 @@
     },
     "description": {
       "type": "string"
+    },
+    "preauth": {
+      "type": "string"
     }
   },
   "required": [
     "from",
     "to",
     "amount"
-  ],
-  "id": "http://example.com/transactions/transaction.json"
+  ]
 }

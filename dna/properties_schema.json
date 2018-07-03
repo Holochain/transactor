@@ -1,12 +1,15 @@
 {
-	"title": "Properties Schema",
-	"type": "object",
-	"properties": {
-		"description": {
-			"type": "string"
-		},
-		"language": {
-			"type": "string"
-		}
-	}
+  "title": "Properties Schema",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "creditLimit": {
+      "type":"integer"
+    }
+  }
 }

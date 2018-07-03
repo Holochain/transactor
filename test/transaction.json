@@ -1,101 +1,16 @@
 {
-    "Tests": [
-        {
-            "Convey": "Create new transaction",
-            "Zome": "Transactions",
-            "FnName": "TransactionCreate",
-            "Input": {
-                "amount": 52.9,
-                "description": "Sending 52",
-                "role": "spender",
-                "who": "%agent0%"
-            },
-            "Output": "%h0%",
-            "Err": "",
-            "Regexp": "",
-            "Time": 0,
-            "Wait": 0,
-            "Exposure": "public",
-            "Raw": false,
-            "Repeat": 0
-        },
-        {
-            "Convey": "Read transaction",
-            "Zome": "Transactions",
-            "FnName": "TransactionRead",
-            "Input": {
-                "transaction": "%h0%"
-            },
-            "Output": {
-                "amount": 52.9,
-                "description": "Sending 52",
-                "from": "%key%",
-                "to": "%agent0%"
-            },
-            "Err": "",
-            "Regexp": "",
-            "Time": 0,
-            "Wait": 0,
-            "Exposure": "public",
-            "Raw": false,
-            "Repeat": 0
-        },
-        {
-            "Convey": "Create proof of deposit record",
-            "Zome": "Transactions",
-            "FnName": "ProofOfDepositCreate",
-            "Input": {
-                "amount": 52,
-                "currency": "EUR",
-                "depositor": "%agent0%",
-                "proof": {
-                    "id": "xxx"
-                },
-                "rateHash": "123"
-            },
-            "Output": {
-                "deposit": "%h1%",
-                "transaction": "%h0%"
-            },
-            "Err": "",
-            "Regexp": "",
-            "Time": 0,
-            "Wait": 0,
-            "Exposure": "public",
-            "Raw": false,
-            "Repeat": 0
-        },
-        {
-            "Convey": "Read of deposit record",
-            "Zome": "Transactions",
-            "FnName": "ProofOfDepositRead",
-            "Input": {
-                "deposit": "%h1%",
-                "transaction": "%h0%"
-            },
-            "Output":"unimplemented",
-            "OutputWhenImplement": {
-                "amount": 520,
-                "description": "Credit limit increase",
-                "from": "%agent%",
-                "to": "%agent0%"
-            },
-            "Err": "",
-            "Regexp": "",
-            "Time": 0,
-            "Wait": 0,
-            "Exposure": "public",
-            "Raw": false,
-            "Repeat": 0
-        }
-    ],
-    "Identity": "superbosstoken",
-    "Fixtures": {
-        "Agents": [
-            {
-                "Hash": "QmVGtdTZdTFaLsaj2RwdVG8jcjNNcp1DE914DKZ2kHmXHw",
-                "Identity": "some agent"
-            }
-        ]
+  "Tests": [
+    {
+      "Convey": "We should start with a zero balance",
+      "Zome": "transaction",
+      "FnName": "getBalance",
+      "Output": 0
+    },
+    {
+      "Convey": "We should be able to fetch our own hash",
+      "Zome": "transaction",
+      "FnName": "getSelfHash",
+      "Output": "%key%"
     }
+  ]
 }

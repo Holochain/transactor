@@ -1,80 +1,68 @@
 {
     "Version": 1,
-    "UUID": "a6e66c32-69db-429c-9352-c28b8fdfb9e5",
+    "UUID": "a7e2eef3-b28c-4e08-9ec3-c91f456e94e2",
     "Name": "transactor",
+    "RequiresVersion": 26,
+    "DHTConfig": {
+        "HashType": "sha2-256"
+    },
     "Properties": {
-        "description": "Mutual credit system for Scouter",
-        "language": "en"
+        "description": "Asset backed mutual-credit currency built on holochain",
+        "language": "en",
+        "creditLimit":"500"
     },
     "PropertiesSchemaFile": "properties_schema.json",
-    "BasedOn": {
-        "H": null
-    },
     "Zomes": [
         {
-            "Name": "Transactions",
-            "Description": "Execution and validation of transactions",
-            "CodeFile": "Transactions.js",
+            "Name": "transaction",
+            "Description": "Execution and validation of mutual credit transactions",
+            "CodeFile": "transaction.js",
             "Entries": [
                 {
-                    "Name": "Transaction",
+                    "Name": "transaction",
                     "DataFormat": "json",
                     "Schema": "",
-                    "SchemaFile": "Transaction.json",
+                    "SchemaFile": "transaction.json",
                     "Sharing": "public"
                 },
                 {
-                    "Name": "ProofOfDeposit",
+                    "Name": "preauth",
                     "DataFormat": "json",
                     "Schema": "",
-                    "SchemaFile": "ProofOfDeposit.json",
+                    "SchemaFile": "preauth.json",
                     "Sharing": "public"
                 }
             ],
             "RibosomeType": "js",
             "Functions": [
                 {
-                    "Name": "TransactionCreate",
+                    "Name": "transactionCreate",
                     "CallingType": "json",
+                    "InputSchemaFile": "input-transaction-create.json",
+                    "ReturnType": "string",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "TransactionRead",
+                    "Name": "transactionRead",
                     "CallingType": "json",
+                    "InputSchemaFile": "input-transaction-read.json",
+                    "ReturnType": "json",
+                    "OutputSchemaFile": "transaction.json",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "ProofOfDepositCreate",
-                    "CallingType": "json",
+                    "Name": "getSelfHash",
+                    "CallingType": "string",
+                    "ReturnType": "string",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "ProofOfDepositRead",
-                    "CallingType": "json",
-                    "Exposure": "public"
-                },
-                {
-                    "Name": "GetBalance",
-                    "CallingType": "json",
-                    "Exposure": "public"
-                },
-                {
-                    "Name": "GetUserProfile",
-                    "CallingType": "json",
+                    "Name": "getBalance",
+                    "CallingType": "string",
+                    "ReturnType": "string",
                     "Exposure": "public"
                 }
-            ],
-            "BridgeFuncs": null,
-            "BridgeTo": ""
+            ]
         }
-    ],
-    "RequiresVersion": 0,
-    "DHTConfig": {
-        "HashType": "sha2-256",
-        "NeighborhoodSize": 0
-    },
-    "Progenitor": {
-        "Identity": "",
-        "PubKey": null
-    }
+    ]
 }

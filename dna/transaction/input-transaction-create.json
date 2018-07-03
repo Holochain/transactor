@@ -1,0 +1,69 @@
+{
+  "title": "input-transaction-read schema",
+  "type": "object",
+  "oneOf": [
+    {
+      "properties": {
+        "role": {
+          "type": "string",
+          "pattern": "spender"
+        },
+        "to": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "to",
+        "amount"
+      ]
+    },
+    {
+      "properties": {
+        "role": {
+          "type": "string",
+          "pattern": "receiver"
+        },
+        "from": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "description": {
+          "type": "string"
+        },
+        "preauth": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "to",
+        "amount",
+        "preauth"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "role": "sender",
+      "to": "receiver-hash-here",
+      "amount": 12.5
+    },
+    {
+      "role": "receiver",
+      "from": "sender-hash-here",
+      "amount": 12.5,
+      "preauth": "preauth-hash-here"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "input-transaction-read schema",
+  "type": "object",
+  "properties": {
+    "transaction": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "transaction"
+  ]
+}
