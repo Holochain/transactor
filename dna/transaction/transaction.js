@@ -7249,47 +7249,6 @@ var dna = function (exports) {
 		return balance;
 	}
 
-	//  balance calculation functions -----------------------------------
-
-	// update balance given a preauth or transaction entry from the chain
-	/*
- function adjustBalance (balance, type, entry, commiter) {
-   switch (type) {
-     case 'transaction':
-       var amount = entry.amount
-       var from = entry.from
-       if (entry.hasOwnProperty('preauth') && (from === entry.to)) {
-         // special case for preauth funding ourselves
-         balance += amount
-       } else {
-         if (from === commiter) balance -= amount
-         else balance += amount
-       }
-       break
-     case 'preauth':
-       balance -= entry.amount
-   }
-   return balance
- }
- */
-
-	/*
- function _getBalance (creditLimit) {
-   var balance = 0
-   var commiter = common.getMe()
-   var entries = query({Constrain: {'EntryTypes': ['transaction', 'preauth']}})
-   for (var i = 1; i < entries.length; i++) {
-     var entry = entries[i]
-     var type = entry.hasOwnProperty('payload') ? 'preauth' : 'transaction'
-     balance = adjustBalance(balance, type, entry, commiter)
-     if (balance < creditLimit) {
-       break
-     }
-   }
-   return balance
- }
- */
-
 	exports.genesis = genesis;
 	exports.validateCommit = validateCommit;
 	exports.validatePut = validatePut;
