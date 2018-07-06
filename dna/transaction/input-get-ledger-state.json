@@ -1,0 +1,8 @@
+{
+  "title": "input-get-ledger-state schema",
+  "type": "object",
+  "properties": {
+  },
+  "required": [
+  ]
+}

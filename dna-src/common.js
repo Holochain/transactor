@@ -46,10 +46,29 @@ export class UnitValue {
   }
 
   /**
+   * Return a human-denominated decimal string (_intval / 10^8)
+   */
+  toDisplay () {
+    return (this._intval / 100000000).toString()
+  }
+
+  /**
    * Return the javascript number value of this amount
    */
   toNumber () {
     return this._intval
+  }
+
+  /**
+   * Return an api output representation of this unit value
+   * Includes a string hex value ('system')
+   * and a user unit denominated ('display')
+   */
+  toRepr () {
+    return {
+      system: this.toString(),
+      display: this.toDisplay()
+    }
   }
 
   /**
@@ -70,14 +89,14 @@ export class UnitValue {
    * Multiply a value with this unitValue, return the result
    */
   mul (oth) {
-    return new UnitValue(parseInt(this._intval * UnitValue._getInt(oth)))
+    return new UnitValue(parseInt(this._intval * UnitValue._getNumRaw(oth)))
   }
 
   /**
    * Divide this unitValue by a value, return the result
    */
   div (oth) {
-    return new UnitValue(parseInt(this._intval / UnitValue._getInt(oth)))
+    return new UnitValue(parseInt(this._intval / UnitValue._getNumRaw(oth)))
   }
 
   /**
@@ -92,6 +111,13 @@ export class UnitValue {
    */
   gt (oth) {
     return this._intval > UnitValue._getInt(oth)
+  }
+
+  /**
+   * Returns `true` if this UnitValue is < oth
+   */
+  lt (oth) {
+    return this._intval < UnitValue._getInt(oth)
   }
 
   // -- "private" -- //
@@ -117,6 +143,21 @@ export class UnitValue {
         throw new Error('bad hex unit-value representation')
       }
       return numInt
+    } else {
+      throw new Error('bad type for arithmetic')
+    }
+  }
+
+  /**
+   * parse various types into a javascript number - don't validate
+   */
+  static _getNumRaw (oth) {
+    if (oth instanceof UnitValue) {
+      return oth._intval
+    } else if (typeof oth === 'string') {
+      return parseInt(oth, 16)
+    } else if (typeof oth === 'number') {
+      return parseFloat(oth)
     } else {
       throw new Error('bad type for arithmetic')
     }
@@ -153,6 +194,13 @@ export function getMaxTransactionFee () {
 }
 
 /**
+ * The factor for calculating owed transaction fee.
+ */
+export function getTransactionFeeFactor () {
+  return parseFloat(property('transactionFeeFactor'))
+}
+
+/**
  * was the result an error?
  */
 export function isErr (result) {
@@ -176,10 +224,12 @@ export function isErr (result) {
 export function validateHistoryDeltas (deltas) {
   trace('validateHistoryDeltas', deltas)
   let balance = new UnitValue(0)
+  let txFeeOwed = new UnitValue(0)
 
-  let curCreditLimit = new UnitValue(500)
+  let curCreditLimit = new UnitValue('ba43b7400')
   const maxTx = getMaxTransactionAmount()
   // const maxFee = getMaxTransactionFee()
+  const txFeeFactor = getTransactionFeeFactor()
 
   const validateNow = () => {
     if (balance.gt(curCreditLimit)) {
@@ -195,9 +245,13 @@ export function validateHistoryDeltas (deltas) {
     }
 
     // TODO - set the credit limit for this point in history
-    curCreditLimit = new UnitValue(500)
+    curCreditLimit = new UnitValue('ba43b7400')
 
     balance = balance.add(delta.amount)
+
+    if (delta.amount.lt(0)) {
+      txFeeOwed = txFeeOwed.add(delta.amount.mul(txFeeFactor))
+    }
 
     validateNow()
   }
@@ -206,7 +260,10 @@ export function validateHistoryDeltas (deltas) {
     checkDelta(delta)
   }
 
-  return balance
+  return {
+    balance,
+    txFeeOwed
+  }
 }
 
 /**
@@ -268,6 +325,6 @@ export function getLocalDeltas () {
 /**
  * Get the current balance of the local identity
  */
-export function getBalance () {
+export function getLedgerState () {
   return validateHistoryDeltas(getLocalDeltas())
 }

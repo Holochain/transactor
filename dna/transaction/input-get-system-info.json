@@ -1,0 +1,8 @@
+{
+  "title": "input-get-system-info schema",
+  "type": "object",
+  "properties": {
+  },
+  "required": [
+  ]
+}

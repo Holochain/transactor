@@ -187,7 +187,7 @@ object-assign
           "application/json"
         ],
         "produces": [
-          "text/plain"
+          "application/json"
         ],
         "requestBody": {
           "required": true,
@@ -286,9 +286,15 @@ object-assign
           "200": {
             "description": "success",
             "content": {
-              "text/plain": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -395,24 +401,27 @@ object-assign
         }
       }
     },
-    "/transaction/getSelfHash": {
+    "/transaction/getSystemInfo": {
       "post": {
         "tags": [
           "transaction"
         ],
-        "summary": "getSelfHash",
+        "summary": "getSystemInfo",
         "consumes": [
-          "text/plain"
+          "application/json"
         ],
         "produces": [
-          "text/plain"
+          "application/json"
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "text/plain": {
+            "application/json": {
               "schema": {
-                "type": "string"
+                "title": "input-get-system-info schema",
+                "type": "object",
+                "properties": {},
+                "required": []
               }
             }
           }
@@ -421,9 +430,15 @@ object-assign
           "200": {
             "description": "success",
             "content": {
-              "text/plain": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -446,24 +461,27 @@ object-assign
         }
       }
     },
-    "/transaction/getBalance": {
+    "/transaction/getLedgerState": {
       "post": {
         "tags": [
           "transaction"
         ],
-        "summary": "getBalance",
+        "summary": "getLedgerState",
         "consumes": [
-          "text/plain"
+          "application/json"
         ],
         "produces": [
-          "text/plain"
+          "application/json"
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "text/plain": {
+            "application/json": {
               "schema": {
-                "type": "string"
+                "title": "input-get-system-info schema",
+                "type": "object",
+                "properties": {},
+                "required": []
               }
             }
           }
@@ -472,9 +490,15 @@ object-assign
           "200": {
             "description": "success",
             "content": {
-              "text/plain": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }

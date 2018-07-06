@@ -1,16 +1,36 @@
 {
   "Tests":[
     {
-      "Convey":"should start with zero balance",
+      "Convey": "We should start with a zero balance",
       "Zome": "transaction",
-      "FnName": "getBalance",
-      "Output": "0"
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "0",
+          "display": "0"
+        },
+        "txFeeOwed": {
+          "system": "0",
+          "display": "0"
+        }
+      }
     },
     {
-      "Convey":"should get self hash",
+      "Convey": "We should be able to fetch our own hash",
       "Zome": "transaction",
-      "FnName": "getSelfHash",
-      "Output": "%key%"
+      "FnName": "getSystemInfo",
+      "Output": {
+        "selfHash": "%key%",
+        "maxTransactionAmount": {
+          "system": "47868c00",
+          "display": "12"
+        },
+        "maxTransactionFee": {
+          "system": "1dcd6500",
+          "display": "5"
+        },
+        "transactionFeeFactor": 0.01
+      }
     },
     {
       "Time": 2000,
@@ -20,16 +40,25 @@
       "Input": {
         "role": "spender",
         "to": "%jane_key%",
-        "amount": "1c"
+        "amount": "1312d00"
       },
       "Output": "%h%"
     },
     {
       "Time": 3000,
-      "Convey":"balance should now be -1c",
+      "Convey":"balance should now be -1312d00",
       "Zome": "transaction",
-      "FnName": "getBalance",
-      "Output": "-1c"
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "-1312d00",
+          "display": "-0.2"
+        },
+        "txFeeOwed": {
+          "system": "-30d40",
+          "display": "-0.002"
+        }
+      }
     }
   ]
 }

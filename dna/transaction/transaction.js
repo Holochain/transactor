@@ -6630,6 +6630,16 @@ var dna = function (exports) {
 			}
 
 			/**
+    * Return a human-denominated decimal string (_intval / 10^8)
+    */
+
+		}, {
+			key: 'toDisplay',
+			value: function toDisplay() {
+				return (this._intval / 100000000).toString();
+			}
+
+			/**
     * Return the javascript number value of this amount
     */
 
@@ -6637,6 +6647,21 @@ var dna = function (exports) {
 			key: 'toNumber',
 			value: function toNumber() {
 				return this._intval;
+			}
+
+			/**
+    * Return an api output representation of this unit value
+    * Includes a string hex value ('system')
+    * and a user unit denominated ('display')
+    */
+
+		}, {
+			key: 'toRepr',
+			value: function toRepr() {
+				return {
+					system: this.toString(),
+					display: this.toDisplay()
+				};
 			}
 
 			/**
@@ -6666,7 +6691,7 @@ var dna = function (exports) {
 		}, {
 			key: 'mul',
 			value: function mul(oth) {
-				return new UnitValue(parseInt(this._intval * UnitValue._getInt(oth)));
+				return new UnitValue(parseInt(this._intval * UnitValue._getNumRaw(oth)));
 			}
 
 			/**
@@ -6676,7 +6701,7 @@ var dna = function (exports) {
 		}, {
 			key: 'div',
 			value: function div(oth) {
-				return new UnitValue(parseInt(this._intval / UnitValue._getInt(oth)));
+				return new UnitValue(parseInt(this._intval / UnitValue._getNumRaw(oth)));
 			}
 
 			/**
@@ -6697,6 +6722,16 @@ var dna = function (exports) {
 			key: 'gt',
 			value: function gt(oth) {
 				return this._intval > UnitValue._getInt(oth);
+			}
+
+			/**
+    * Returns `true` if this UnitValue is < oth
+    */
+
+		}, {
+			key: 'lt',
+			value: function lt(oth) {
+				return this._intval < UnitValue._getInt(oth);
 			}
 
 			// -- "private" -- //
@@ -6725,6 +6760,24 @@ var dna = function (exports) {
 						throw new Error('bad hex unit-value representation');
 					}
 					return numInt;
+				} else {
+					throw new Error('bad type for arithmetic');
+				}
+			}
+
+			/**
+    * parse various types into a javascript number - don't validate
+    */
+
+		}, {
+			key: '_getNumRaw',
+			value: function _getNumRaw(oth) {
+				if (oth instanceof UnitValue) {
+					return oth._intval;
+				} else if (typeof oth === 'string') {
+					return parseInt(oth, 16);
+				} else if (typeof oth === 'number') {
+					return parseFloat(oth);
 				} else {
 					throw new Error('bad type for arithmetic');
 				}
@@ -6766,6 +6819,13 @@ var dna = function (exports) {
 	}
 
 	/**
+  * The factor for calculating owed transaction fee.
+  */
+	function getTransactionFeeFactor() {
+		return parseFloat(property('transactionFeeFactor'));
+	}
+
+	/**
   * was the result an error?
   */
 	function isErr(result) {
@@ -6789,10 +6849,12 @@ var dna = function (exports) {
 	function validateHistoryDeltas(deltas) {
 		trace('validateHistoryDeltas', deltas);
 		var balance = new UnitValue(0);
+		var txFeeOwed = new UnitValue(0);
 
-		var curCreditLimit = new UnitValue(500);
+		var curCreditLimit = new UnitValue('ba43b7400');
 		var maxTx = getMaxTransactionAmount();
 		// const maxFee = getMaxTransactionFee()
+		var txFeeFactor = getTransactionFeeFactor();
 
 		var validateNow = function validateNow() {
 			if (balance.gt(curCreditLimit)) {
@@ -6808,9 +6870,13 @@ var dna = function (exports) {
 			}
 
 			// TODO - set the credit limit for this point in history
-			curCreditLimit = new UnitValue(500);
+			curCreditLimit = new UnitValue('ba43b7400');
 
 			balance = balance.add(delta.amount);
+
+			if (delta.amount.lt(0)) {
+				txFeeOwed = txFeeOwed.add(delta.amount.mul(txFeeFactor));
+			}
 
 			validateNow();
 		};
@@ -6840,7 +6906,10 @@ var dna = function (exports) {
 			}
 		}
 
-		return balance;
+		return {
+			balance: balance,
+			txFeeOwed: txFeeOwed
+		};
 	}
 
 	/**
@@ -6920,7 +6989,7 @@ var dna = function (exports) {
 	/**
   * Get the current balance of the local identity
   */
-	function getBalance() {
+	function getLedgerState() {
 		return validateHistoryDeltas(getLocalDeltas());
 	}
 
@@ -7233,20 +7302,31 @@ var dna = function (exports) {
   * return this agent's hash
   * @return {string} this agent's hash
   */
-	function getSelfHash() {
-		var selfHash = getMe();
-		trace('selfHash', selfHash);
-		return selfHash;
+	function getSystemInfo() {
+		var maxTxAmount = getMaxTransactionAmount();
+		var maxTxFee = getMaxTransactionFee();
+		var out = {
+			selfHash: getMe(),
+			maxTransactionAmount: maxTxAmount.toRepr(),
+			maxTransactionFee: maxTxFee.toRepr(),
+			transactionFeeFactor: getTransactionFeeFactor()
+		};
+		trace('getSystemInfo', out);
+		return out;
 	}
 
 	/**
   * calculate balance from history
   * @return {float} the node's balance
   */
-	function getBalance$1() {
-		var balance = getBalance().toString();
-		trace('balance', balance);
-		return balance;
+	function getLedgerState$1() {
+		var ls = getLedgerState();
+		var out = {
+			balance: ls.balance.toRepr(),
+			txFeeOwed: ls.txFeeOwed.toRepr()
+		};
+		trace('getLedgerState', out);
+		return out;
 	}
 
 	exports.genesis = genesis;
@@ -7262,8 +7342,8 @@ var dna = function (exports) {
 	exports.transactionRead = transactionRead;
 	exports.preauthCreate = preauthCreate;
 	exports.preauthCancel = preauthCancel;
-	exports.getSelfHash = getSelfHash;
-	exports.getBalance = getBalance$1;
+	exports.getSystemInfo = getSystemInfo;
+	exports.getLedgerState = getLedgerState$1;
 
 	return exports;
 }({});

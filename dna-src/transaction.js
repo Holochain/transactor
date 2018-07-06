@@ -312,18 +312,29 @@ export function preauthCancel (hash) {
  * return this agent's hash
  * @return {string} this agent's hash
  */
-export function getSelfHash () {
-  const selfHash = common.getMe()
-  common.trace('selfHash', selfHash)
-  return selfHash
+export function getSystemInfo () {
+  const maxTxAmount = common.getMaxTransactionAmount()
+  const maxTxFee = common.getMaxTransactionFee()
+  const out = {
+    selfHash: common.getMe(),
+    maxTransactionAmount: maxTxAmount.toRepr(),
+    maxTransactionFee: maxTxFee.toRepr(),
+    transactionFeeFactor: common.getTransactionFeeFactor()
+  }
+  common.trace('getSystemInfo', out)
+  return out
 }
 
 /**
  * calculate balance from history
  * @return {float} the node's balance
  */
-export function getBalance () {
-  const balance = common.getBalance().toString()
-  common.trace('balance', balance)
-  return balance
+export function getLedgerState () {
+  const ls = common.getLedgerState()
+  const out = {
+    balance: ls.balance.toRepr(),
+    txFeeOwed: ls.txFeeOwed.toRepr()
+  }
+  common.trace('getLedgerState', out)
+  return out
 }

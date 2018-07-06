@@ -9,8 +9,9 @@
     "Properties": {
         "description": "Asset backed mutual-credit currency built on holochain",
         "language": "en",
-        "maxTransactionAmount": "2d",
-        "maxTransactionFee": "a"
+        "maxTransactionAmount": "47868c00",
+        "maxTransactionFee": "1dcd6500",
+        "transactionFeeFactor": "0.01"
     },
     "PropertiesSchemaFile": "properties_schema.json",
     "Zomes": [
@@ -40,7 +41,7 @@
                     "Name": "transactionCreate",
                     "CallingType": "json",
                     "InputSchemaFile": "input-transaction-create.json",
-                    "ReturnType": "string",
+                    "ReturnType": "json",
                     "Exposure": "public"
                 },
                 {
@@ -52,15 +53,17 @@
                     "Exposure": "public"
                 },
                 {
-                    "Name": "getSelfHash",
-                    "CallingType": "string",
-                    "ReturnType": "string",
+                    "Name": "getSystemInfo",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-get-system-info.json",
+                    "ReturnType": "json",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "getBalance",
-                    "CallingType": "string",
-                    "ReturnType": "string",
+                    "Name": "getLedgerState",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-get-ledger-state.json",
+                    "ReturnType": "json",
                     "Exposure": "public"
                 }
             ]
