@@ -6562,6 +6562,71 @@ var dna = function (exports) {
 	});
 
 	/**
+  */
+	function genesis() {
+		return true;
+	}
+
+	/**
+  */
+	function validateCommit(entryName, entry, header, pkg, sources) {
+		return true;
+	}
+
+	/**
+  */
+	function validateLink(linkEntryType, baseHash, links, pkg, sources) {
+		return true;
+	}
+
+	/**
+  */
+	function validatePut(entryName, entry, header, pkg, sources) {
+		return true;
+	}
+
+	/**
+  */
+	function validateMod(entryName, entry, header, replaces, pkg, sources) {
+		return false;
+	}
+
+	/**
+  */
+	function validateDel(entryName, hash, pkg, sources) {
+		return false;
+	}
+
+	/**
+  * Called to get the data needed to validate
+  * @param {string} entryName - the name of entry to validate
+  * @return {*} the data required for validation
+  */
+	function validatePutPkg(entryName) {
+		var req = {};
+		req[HC.PkgReq.Chain] = HC.PkgReq.ChainOpt.Full;
+		return req;
+	}
+
+	/**
+  * Called to get the data needed to validate
+  * @param {string} entryName - the name of entry to validate
+  * @return {*} the data required for validation
+  */
+	function validateModPkg(entryName) {
+		return null;
+	}
+
+	/**
+  * Called to get the data needed to validate
+  * @param {string} entryName - the name of entry to validate
+  * @return {*} the data required for validation
+  */
+	function validateDelPkg(entryName) {
+		return null;
+	}
+
+	/**
   * helper for printing debugging during development
   */
 	function trace() {
@@ -6796,6 +6861,16 @@ var dna = function (exports) {
 		return App.Key.Hash;
 	}
 
+	/**
+  * For exported functions that take an amount as input
+  */
+	function validateHexAmount(amount) {
+		if (typeof amount !== 'string') {
+			throw new Error('"amount" must be a hexidecimal string');
+		}
+		return new UnitValue(amount).toString();
+	}
+
 	/*
  export function getCreditLimit () {
    // TODO - algorithm based on usage
@@ -6826,93 +6901,6 @@ var dna = function (exports) {
 	}
 
 	/**
-  * was the result an error?
-  */
-	function isErr(result) {
-		return (typeof result === 'undefined' ? 'undefined' : _typeof(result)) === 'object' && result.name === 'HolochainError';
-	}
-
-	/**
-  * Check through a full history of amount deltas,
-  * checking validation rules along the way.
-  *
-  * @param {array<object>} deltas - the "deltas"
-  *        - these should include {
-  *          amount: UnitValue,
-  *          time: utc-epoch-millis, time of transaction
-  *        }
-  *
-  * Throws an error if validation rules are not satisfied
-  * otherwise
-  * @return {UnitValue} the current balance of the account
-  */
-	function validateHistoryDeltas(deltas) {
-		trace('validateHistoryDeltas', deltas);
-		var balance = new UnitValue(0);
-		var txFeeOwed = new UnitValue(0);
-
-		var curCreditLimit = new UnitValue('ba43b7400');
-		var maxTx = getMaxTransactionAmount();
-		// const maxFee = getMaxTransactionFee()
-		var txFeeFactor = getTransactionFeeFactor();
-
-		var validateNow = function validateNow() {
-			if (balance.gt(curCreditLimit)) {
-				throw new Error('over credit limit');
-			}
-			// TODO - see if we are over the transaction fee limit
-			//      - ... once we can actually pay transaction fees
-		};
-
-		var checkDelta = function checkDelta(delta) {
-			if (delta.amount.abs().gt(maxTx)) {
-				throw new Error('over max transaction amount');
-			}
-
-			// TODO - set the credit limit for this point in history
-			curCreditLimit = new UnitValue('ba43b7400');
-
-			balance = balance.add(delta.amount);
-
-			if (delta.amount.lt(0)) {
-				txFeeOwed = txFeeOwed.add(delta.amount.mul(txFeeFactor));
-			}
-
-			validateNow();
-		};
-
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = deltas[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var delta = _step.value;
-
-				checkDelta(delta);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-
-		return {
-			balance: balance,
-			txFeeOwed: txFeeOwed
-		};
-	}
-
-	/**
   * Apparently, holochain-proto returns various time formats : /
   * worse... not all of them are parse-able by javascript.
   * Convert the non-parsable one into something that parses.
@@ -6934,368 +6922,515 @@ var dna = function (exports) {
 	}
 
 	/**
-  * load up an array of in-s and out-s suitible for passing to validateHistoryDeltas
   */
-	function getLocalDeltas() {
-		var me = getMe();
-		var deltas = [];
+	function listLocal() {
+		var thisHash = getMe();
+		var txList = [];
 
-		var _iteratorNormalCompletion2 = true;
-		var _didIteratorError2 = false;
-		var _iteratorError2 = undefined;
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
 
 		try {
-			for (var _iterator2 = query({
+			for (var _iterator = query({
 				Constrain: {
-					EntryTypes: ['transaction', 'preauth']
+					EntryTypes: ['alphaRecipientInit', 'alphaSpenderAccept', 'betaSpenderInit', 'betaRecipientAccept']
 				},
 				Return: {
 					Hashes: true,
 					Entries: true,
 					Headers: true
 				}
-			})[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-				var entry = _step2.value;
+			})[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var entry = _step.value;
 
-				var amount = new UnitValue(entry.Entry.amount);
+				switch (entry.Header.Type) {
+					case 'alphaRecipientInit':
+						{
+							if (entry.Entry.recipient !== thisHash) {
+								continue;
+							}
 
-				if (entry.Entry.to !== me) {
-					amount = amount.mul(-1);
+							var links = getLinks(entry.Hash, 'notify', { Load: true });
+
+							var _iteratorNormalCompletion2 = true;
+							var _didIteratorError2 = false;
+							var _iteratorError2 = undefined;
+
+							try {
+								for (var _iterator2 = links[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+									var item = _step2.value;
+
+									switch (item.EntryType) {
+										case 'alphaSpenderAccept':
+											var tx = {
+												type: 'recipient',
+												time: fixTime(entry.Header.Time),
+												amount: new UnitValue(entry.Entry.amount),
+												spender: entry.Entry.spender
+											};
+											if (entry.Entry.notes) {
+												tx.notes = entry.Entry.notes;
+											}
+											txList.push(tx);
+									}
+								}
+							} catch (err) {
+								_didIteratorError2 = true;
+								_iteratorError2 = err;
+							} finally {
+								try {
+									if (!_iteratorNormalCompletion2 && _iterator2.return) {
+										_iterator2.return();
+									}
+								} finally {
+									if (_didIteratorError2) {
+										throw _iteratorError2;
+									}
+								}
+							}
+
+							break;
+						}
+					case 'alphaSpenderAccept':
+						{
+							if (entry.Entry.spender !== thisHash) {
+								continue;
+							}
+
+							var _tx = {
+								type: 'spender',
+								time: fixTime(entry.Header.Time),
+								amount: new UnitValue(entry.Entry.amount),
+								recipient: entry.Entry.recipient
+							};
+							if (entry.Entry.notes) {
+								_tx.notes = entry.Entry.notes;
+							}
+							txList.push(_tx);
+							break;
+						}
+					case 'betaSpenderInit':
+						{
+							if (entry.Entry.spender !== thisHash) {
+								continue;
+							}
+
+							var _links = getLinks(entry.Hash, 'notify', { Load: true });
+
+							var _iteratorNormalCompletion3 = true;
+							var _didIteratorError3 = false;
+							var _iteratorError3 = undefined;
+
+							try {
+								for (var _iterator3 = _links[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+									var _item = _step3.value;
+
+									switch (_item.EntryType) {
+										case 'betaRecipientReject':
+											continue;
+										case 'betaSpenderWithdraw':
+											continue;
+									}
+								}
+							} catch (err) {
+								_didIteratorError3 = true;
+								_iteratorError3 = err;
+							} finally {
+								try {
+									if (!_iteratorNormalCompletion3 && _iterator3.return) {
+										_iterator3.return();
+									}
+								} finally {
+									if (_didIteratorError3) {
+										throw _iteratorError3;
+									}
+								}
+							}
+
+							var _tx2 = {
+								type: 'spender',
+								time: fixTime(entry.Header.Time),
+								amount: new UnitValue(entry.Entry.amount),
+								recipient: entry.Entry.recipient
+							};
+							if (entry.Entry.notes) {
+								_tx2.notes = entry.Entry.notes;
+							}
+							txList.push(_tx2);
+
+							break;
+						}
+					case 'betaRecipientAccept':
+						{
+							if (entry.Entry.recipient !== thisHash) {
+								continue;
+							}
+
+							var _tx3 = {
+								type: 'recipient',
+								time: fixTime(entry.Header.Time),
+								amount: new UnitValue(entry.Entry.amount),
+								spender: entry.Entry.spender
+							};
+							if (entry.Entry.notes) {
+								_tx3.notes = entry.Entry.notes;
+							}
+							txList.push(_tx3);
+							break;
+						}
 				}
-
-				deltas.push({
-					amount: amount,
-					time: fixTime(entry.Header.Time)
-				});
 			}
 		} catch (err) {
-			_didIteratorError2 = true;
-			_iteratorError2 = err;
+			_didIteratorError = true;
+			_iteratorError = err;
 		} finally {
 			try {
-				if (!_iteratorNormalCompletion2 && _iterator2.return) {
-					_iterator2.return();
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
 				}
 			} finally {
-				if (_didIteratorError2) {
-					throw _iteratorError2;
+				if (_didIteratorError) {
+					throw _iteratorError;
 				}
 			}
 		}
 
-		return deltas;
+		return txList;
+	}
+
+	/**
+  */
+	function validateLedgerState(txList) {
+		trace('validateLedgerState', txList);
+		var balance = new UnitValue(0);
+		var txFeeOwed = new UnitValue(0);
+
+		var curCreditLimit = new UnitValue('ba43b7400');
+		var maxTx = getMaxTransactionAmount();
+		// const maxFee = getMaxTransactionFee()
+		var txFeeFactor = getTransactionFeeFactor();
+
+		var validateNow = function validateNow() {
+			if (balance.gt(curCreditLimit)) {
+				throw new Error('over credit limit');
+			}
+			// TODO - see if we are over the transaction fee limit
+			//      - ... once we can actually pay transaction fees
+		};
+
+		var checkDelta = function checkDelta(tx) {
+			if (tx.amount.abs().gt(maxTx)) {
+				throw new Error('over max transaction amount');
+			}
+
+			// TODO - set the credit limit for this point in history
+			curCreditLimit = new UnitValue('ba43b7400');
+
+			switch (tx.type) {
+				case 'spender':
+					balance = balance.sub(tx.amount);
+					txFeeOwed = txFeeOwed.add(tx.amount.mul(txFeeFactor));
+					break;
+				case 'recipient':
+					balance = balance.add(tx.amount);
+					break;
+				default:
+					throw new Error('unrecognized tx.type: ' + tx.type);
+			}
+
+			validateNow();
+		};
+
+		txList.map(checkDelta);
+
+		return {
+			balance: balance,
+			txFeeOwed: txFeeOwed
+		};
 	}
 
 	/**
   * Get the current balance of the local identity
   */
 	function getLedgerState() {
-		return validateHistoryDeltas(getLocalDeltas());
+		return validateLedgerState(listLocal());
 	}
 
 	/**
-  * Called only once when the source chain is generated
-  * @return {boolean} success
   */
-	function genesis() {
-		trace('transactor GENESIS');
-		trace('maxTransactionAmount', getMaxTransactionAmount().toNumber());
-		trace('maxTransactionFee', getMaxTransactionFee().toNumber());
+	function txAlphaRecipientInit(params) {
+		var spenderHash = params.spender;
+		var recipientHash = getMe();
 
-		// any genesis code here
-		return true;
-	}
+		var entry = {
+			spender: spenderHash,
+			recipient: recipientHash,
+			amount: validateHexAmount(params.amount)
+		};
 
-	/**
-  * Called to validate any changes to the DHT
-  * @param {string} entryName - the name of entry being modified
-  * @param {*} entry - the entry data to be set
-  * @param {?} header - ?
-  * @param {?} pkg - ?
-  * @param {?} sources - ?
-  * @return {boolean} is valid?
-  */
-	function validateCommit(entryName, entry, header, pkg, sources) {
-		switch (entryName) {
-			case 'transaction':
-				var deltas = getLocalDeltas();
-				var me = getMe();
-				var amount = new UnitValue(entry.amount);
-				if (me === entry.from) {
-					amount = amount.mul(-1);
-				}
-				deltas.push({
-					amount: amount,
-					time: fixTime(header.Time)
-				});
-				try {
-					validateHistoryDeltas(deltas);
-					trace('validateCommit', 'ok');
-					return true;
-				} catch (e) {
-					trace('validateCommit', 'FAIL!');
-					return false;
-				}
-			case 'preauth':
-				// TODO - validate preauth entries!
-				return true;
-			default:
-				// invalid entry name!!
-				return false;
+		if (params.notes) {
+			entry.notes = params.notes;
 		}
+
+		var initHash = commit('alphaRecipientInit', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: initHash, Tag: 'notify' }, { Base: recipientHash, Link: initHash, Tag: 'notify' }]
+		});
+
+		trace('txAlphaRecipientInit', entry, initHash);
+
+		return initHash;
 	}
 
 	/**
-  * Called to validate any changes to the DHT
-  * @pfaram {string} entryName - the name of entry being modified
-  * @param {*} entry - the entry data to be set
-  * @param {?} header - ?
-  * @param {?} pkg - ?
-  * @param {?} sources - ?
-  * @return {boolean} is valid?
   */
-	function validatePut(entryName, entry, header, pkg, sources) {
-		var commiter = sources[0];
-		var deltas = [];
+	function txAlphaSpenderAccept(params) {
+		var initRef = params.initRef;
+		var spenderHash = getMe();
 
-		for (var _i = 0; _i < pkg.Chain.Headers.length && _i < pkg.Chain.Entries.length; ++_i) {
-			var type = pkg.Chain.Headers[_i].Type;
-			var time = fixTime(pkg.Chain.Headers[_i].Time);
-			if (type !== 'transaction' && type !== 'preauth') {
-				continue;
-			}
-			var _entry = JSON.parse(pkg.Chain.Entries[_i].C);
+		var initData = get(initRef);
 
-			var amount = new UnitValue(_entry.amount);
-			if (_entry.from === commiter) {
-				amount = amount.mul(-1);
-			}
-
-			deltas.push({
-				amount: amount,
-				time: time
-			});
+		if (spenderHash !== initData.spender) {
+			throw new Error('This agent is not the spender on this tx. This agent: ' + spenderHash + ', tx spender: ' + initData.spender);
 		}
+
+		var recipientHash = initData.recipient;
+
+		var entry = {
+			spender: spenderHash,
+			recipient: recipientHash,
+			amount: validateHexAmount(initData.amount),
+			initRef: initRef
+		};
+
+		if (initData.notes) {
+			entry.notes = initData.notes;
+		}
+
+		var acceptHash = commit('alphaSpenderAccept', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: acceptHash, Tag: 'notify' }, { Base: recipientHash, Link: acceptHash, Tag: 'notify' }, { Base: initRef, Link: acceptHash, Tag: 'notify' }]
+		});
+
+		trace('txAlphaSpenderAccept', entry, acceptHash);
+
+		return acceptHash;
+	}
+
+	/**
+  */
+	function txAlphaSpenderReject(params) {
+		var initRef = params.initRef;
+		var spenderHash = getMe();
+
+		var initData = get(initRef);
+
+		if (spenderHash !== initData.spender) {
+			throw new Error('This agent is not the spender on this tx. This agent: ' + spenderHash + ', tx spender: ' + initData.spender);
+		}
+
+		var recipientHash = initData.recipient;
+
+		var entry = {
+			initRef: initRef
+		};
+
+		var rejectHash = commit('alphaSpenderReject', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: rejectHash, Tag: 'notify' }, { Base: recipientHash, Link: rejectHash, Tag: 'notify' }, { Base: initRef, Link: rejectHash, Tag: 'notify' }]
+		});
+
+		trace('txAlphaSpenderReject', entry, rejectHash);
+
+		return rejectHash;
+	}
+
+	/**
+  */
+	function txBetaSpenderInit(params) {
+		var spenderHash = getMe();
+		var recipientHash = params.recipient;
+
+		var entry = {
+			spender: spenderHash,
+			recipient: recipientHash,
+			amount: validateHexAmount(params.amount)
+		};
+
+		if (params.notes) {
+			entry.notes = params.notes;
+		}
+
+		var initHash = commit('betaSpenderInit', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: initHash, Tag: 'notify' }, { Base: recipientHash, Link: initHash, Tag: 'notify' }]
+		});
+
+		trace('txBetaSpenderInit', entry, initHash);
+
+		return initHash;
+	}
+
+	/**
+  */
+	function txBetaRecipientAccept(params) {
+		var initRef = params.initRef;
+		var recipientHash = getMe();
+
+		var initData = get(initRef);
+
+		if (recipientHash !== initData.recipient) {
+			throw new Error('This agent is not the recipient on this tx. This agent: ' + recipientHash + ', tx recipient: ' + initData.recipient);
+		}
+
+		var spenderHash = initData.spender;
+
+		var entry = {
+			spender: spenderHash,
+			recipient: recipientHash,
+			amount: validateHexAmount(initData.amount),
+			initRef: initRef
+		};
+
+		if (initData.notes) {
+			entry.notes = initData.notes;
+		}
+
+		var acceptHash = commit('betaRecipientAccept', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: acceptHash, Tag: 'notify' }, { Base: recipientHash, Link: acceptHash, Tag: 'notify' }, { Base: initRef, Link: acceptHash, Tag: 'notify' }]
+		});
+
+		trace('txBetaRecipientAccept', entry, acceptHash);
+
+		return acceptHash;
+	}
+
+	/**
+  */
+	function txBetaRecipientReject(params) {
+		var initRef = params.initRef;
+		var recipientHash = getMe();
+
+		var initData = get(initRef);
+
+		if (recipientHash !== initData.recipient) {
+			throw new Error('This agent is not the recipient on this tx. This agent: ' + recipientHash + ', tx recipient: ' + initData.recipient);
+		}
+
+		var spenderHash = initData.spender;
+
+		var entry = {
+			initRef: initRef
+		};
+
+		var rejectHash = commit('betaRecipientReject', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: rejectHash, Tag: 'notify' }, { Base: recipientHash, Link: rejectHash, Tag: 'notify' }, { Base: initRef, Link: rejectHash, Tag: 'notify' }]
+		});
+
+		trace('txBetaRecipientReject', entry, rejectHash);
+
+		return rejectHash;
+	}
+
+	/**
+  */
+	function txBetaSpenderWithdraw(params) {
+		var initRef = params.initRef;
+		var spenderHash = getMe();
+
+		var initData = get(initRef);
+
+		if (spenderHash !== initData.spender) {
+			throw new Error('This agent is not the spender on this tx. This agent: ' + spenderHash + ', tx spender: ' + initData.spender);
+		}
+
+		var recipientHash = initData.recipient;
+
+		var entry = {
+			initRef: initRef
+		};
+
+		var withdrawHash = commit('betaSpenderWithdraw', entry);
+
+		commit('notify', {
+			Links: [{ Base: spenderHash, Link: withdrawHash, Tag: 'notify' }, { Base: recipientHash, Link: withdrawHash, Tag: 'notify' }, { Base: initRef, Link: withdrawHash, Tag: 'notify' }]
+		});
+
+		trace('txBetaSpenderWithdraw', entry, withdrawHash);
+
+		return withdrawHash;
+	}
+
+	/**
+  */
+	function txListPending() {
+		var myHash = getMe();
+
+		var myLinks = getLinks(myHash, 'notify', { Load: true });
+
+		var initMap = {
+			alpha: {},
+			beta: {}
+		};
+
+		var _iteratorNormalCompletion4 = true;
+		var _didIteratorError4 = false;
+		var _iteratorError4 = undefined;
 
 		try {
-			validateHistoryDeltas(deltas);
-			trace('validatePut', 'ok');
-			return true;
-		} catch (e) {
-			trace('validatePut', 'FAIL!');
-			return false;
-		}
-	}
+			for (var _iterator4 = myLinks[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+				var item = _step4.value;
 
-	/**
-  * Called to validate any changes to the DHT
-  * @param {string} entryName - the name of entry being modified
-  * @param {*} entry - the entry data to be set
-  * @param {?} header - ?
-  * @param {*} replaces - the old entry data
-  * @param {?} pkg - ?
-  * @param {?} sources - ?
-  * @return {boolean} is valid?
-  */
-	function validateMod(entryName, entry, header, replaces, pkg, sources) {
-		switch (entryName) {
-			case 'transaction':
-				// validation code here
-				return false;
-			default:
-				// invalid entry name!!
-				return false;
-		}
-	}
-
-	/**
-  * Called to validate any changes to the DHT
-  * @param {string} entryName - the name of entry being modified
-  * @param {string} hash - the hash of the entry to remove
-  * @param {?} pkg - ?
-  * @param {?} sources - ?
-  * @return {boolean} is valid?
-  */
-	function validateDel(entryName, hash, pkg, sources) {
-		switch (entryName) {
-			case 'transaction':
-				// validation code here
-				return false;
-			default:
-				// invalid entry name!!
-				return false;
-		}
-	}
-
-	/**
-  * Called to get the data needed to validate
-  * @param {string} entryName - the name of entry to validate
-  * @return {*} the data required for validation
-  */
-	function validatePutPkg(entryName) {
-		var req = {};
-		req[HC.PkgReq.Chain] = HC.PkgReq.ChainOpt.Full;
-		// req["types"]=["xxx"];
-		return req;
-	}
-
-	/**
-  * Called to get the data needed to validate
-  * @param {string} entryName - the name of entry to validate
-  * @return {*} the data required for validation
-  */
-	function validateModPkg(entryName) {
-		return null;
-	}
-
-	/**
-  * Called to get the data needed to validate
-  * @param {string} entryName - the name of entry to validate
-  * @return {*} the data required for validation
-  */
-	function validateDelPkg(entryName) {
-		return null;
-	}
-
-	// exposed functions -----------------------------------------------
-
-	/**
-  * commits a new transaction to the chain by communicating with
-  * the node the
-  * @param {object} parameters - An object with the following properties:
-  *    {string} role - must be string 'spender' or 'receiver'
-  *    {string} to - if role is 'spender' specifies address of funds receiver
-  *    {float} amount - transaction amount
-  *    {string} description - transaction notes/description
-  *    {string} preauth - if role is 'receiver' preauth is the has of the preauth entry
-  *    {string} from - if role is 'receiver' specifies address of funds spender
-  * @return {string} the transaction hash
-  */
-	function transactionCreate(params) {
-		var from, to;
-		// if the spender is creating the transaction
-		// it gets confirmed by the receiver before commiting
-		if (params.role === 'spender') {
-			from = getMe();
-			to = params.to;
-			if (typeof params.amount !== 'string') {
-				throw new Error('"amount" must be a hexidecimal string');
+				switch (item.EntryType) {
+					case 'alphaRecipientInit':
+						initMap.alpha[item.Hash] = item.Entry;
+						break;
+					case 'alphaSpenderAccept':
+						delete initMap.alpha[item.Entry.initRef];
+						break;
+					case 'alphaSpenderReject':
+						delete initMap.alpha[item.Entry.initRef];
+						break;
+					case 'betaSpenderInit':
+						initMap.beta[item.Hash] = item.Entry;
+						break;
+					case 'betaRecipientAccept':
+						delete initMap.beta[item.Entry.initRef];
+						break;
+					case 'betaRecipientReject':
+						delete initMap.beta[item.Entry.initRef];
+						break;
+					case 'betaSpenderWithdraw':
+						delete initMap.beta[item.Entry.initRef];
+						break;
+				}
 			}
-
-			var potentialEntry = {
-				from: from,
-				to: to,
-				amount: new UnitValue(params.amount).toString(),
-				description: params.description
-			};
-
-			// make sure we can afford this
-			var deltas = getLocalDeltas();
-			deltas.push({
-				amount: new UnitValue(params.amount),
-				time: Date.now()
-			});
-
-			// will throw if this transaction would be invalid
-			validateHistoryDeltas(deltas);
-
-			trace('initiate transaction', potentialEntry);
-
-			var response = send(to, potentialEntry);
-			if (response) {
-				trace('commiting transaction');
-				return commit('transaction', potentialEntry);
-			}
-		}
-
-		// if the receiver is creating the transaction
-		// there must have been a preauth, and it can be commited
-		// directly
-		if (params.role === 'receiver') {
-			if (typeof params.amount !== 'string') {
-				throw new Error('"amount" must be a hexidecimal string');
-			}
-			var entry = {
-				from: params.from,
-				to: getMe(),
-				amount: new UnitValue(params.amount).toString(),
-				description: params.description,
-				preauth: params.preauth
-			};
-			return commit('transaction', entry);
-		}
-		return null;
-	}
-
-	/**
-  * this is the receive callback which commits the receivers half of the
-  * transaction to their chain, and returns the the hash of that transaction
-  * to the spender as confirmation.
- */
-	function receive(from, msg) {
-		if (msg.to !== getMe()) {
-			return null;
-		}
-
-		trace('received from remote node', getMe(), msg);
-
-		return commit('transaction', msg);
-	}
-
-	/**
-  * get a transaction from the DHT
-  * @param {object} parameters - An object with the following properties:
-  *    {string} transaction - hash of the transaction to read
-  * @return {object} the transaction entry data
-  */
-	function transactionRead(params) {
-		var data = get(params.transaction);
-
-		var transaction = null;
-		if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
-			transaction = data;
-		} else {
+		} catch (err) {
+			_didIteratorError4 = true;
+			_iteratorError4 = err;
+		} finally {
 			try {
-				transaction = JSON.parse(data);
-			} catch (e) {
-				debug(e);
+				if (!_iteratorNormalCompletion4 && _iterator4.return) {
+					_iterator4.return();
+				}
+			} finally {
+				if (_didIteratorError4) {
+					throw _iteratorError4;
+				}
 			}
 		}
 
-		return transaction;
-	}
-
-	/**
-  * preauthorize spending on a particular proposal
-  * @param {object} parameters - An object with the following properties:
-  *    {string} proposal - hash of the proposal on which to preauth
-  *    {float} amount - transaction amount
-  * @return {string} the preauth entry hash
-  */
-	function preauthCreate(params) {
-		var entry = {
-			amount: params.amount,
-			payload: { proposal: params.proposal }
-		};
-		return commit('preauth', entry);
-	}
-
-	/**
-  * cancel preauthorize spending on a particular proposal
-  * this function will only validate if the propoal has completed and didn't pass
-  * @param {object} parameters - An object with the following properties:
-  *    {string} preauth - hash of the previous preauth
-  * @return {string} the preauth cancel etry hash
-  */
-	function preauthCancel(hash) {
-		var preauth = get(hash, { Local: true });
-		if (isErr(preauth)) return preauth;
-		preauth = JSON.parse(preauth);
-		var entry = {
-			amount: -preauth.amount,
-			payload: { preauth: hash }
-		};
-		return commit('preauth', entry);
+		trace('txListPending', initMap);
+		return initMap;
 	}
 
 	/**
@@ -7331,17 +7466,21 @@ var dna = function (exports) {
 
 	exports.genesis = genesis;
 	exports.validateCommit = validateCommit;
+	exports.validateLink = validateLink;
 	exports.validatePut = validatePut;
 	exports.validateMod = validateMod;
 	exports.validateDel = validateDel;
 	exports.validatePutPkg = validatePutPkg;
 	exports.validateModPkg = validateModPkg;
 	exports.validateDelPkg = validateDelPkg;
-	exports.transactionCreate = transactionCreate;
-	exports.receive = receive;
-	exports.transactionRead = transactionRead;
-	exports.preauthCreate = preauthCreate;
-	exports.preauthCancel = preauthCancel;
+	exports.txAlphaRecipientInit = txAlphaRecipientInit;
+	exports.txAlphaSpenderAccept = txAlphaSpenderAccept;
+	exports.txAlphaSpenderReject = txAlphaSpenderReject;
+	exports.txBetaSpenderInit = txBetaSpenderInit;
+	exports.txBetaRecipientAccept = txBetaRecipientAccept;
+	exports.txBetaRecipientReject = txBetaRecipientReject;
+	exports.txBetaSpenderWithdraw = txBetaSpenderWithdraw;
+	exports.txListPending = txListPending;
 	exports.getSystemInfo = getSystemInfo;
 	exports.getLedgerState = getLedgerState$1;
 

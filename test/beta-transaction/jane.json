@@ -1,0 +1,82 @@
+{
+  "Tests":[
+    {
+      "Time": 100,
+      "Convey": "We should start with a zero balance",
+      "Zome": "transaction",
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "0",
+          "display": "0"
+        },
+        "txFeeOwed": {
+          "system": "0",
+          "display": "0"
+        }
+      }
+    },
+    {
+      "Time": 200,
+      "Convey": "We should be able to fetch our own hash",
+      "Zome": "transaction",
+      "FnName": "getSystemInfo",
+      "Output": {
+        "selfHash": "%key%",
+        "maxTransactionAmount": {
+          "system": "47868c00",
+          "display": "12"
+        },
+        "maxTransactionFee": {
+          "system": "1dcd6500",
+          "display": "5"
+        },
+        "transactionFeeFactor": 0.01
+      }
+    },
+    {
+      "Time": 300,
+      "Convey":"send funds to joe",
+      "Zome": "transaction",
+      "FnName": "txBetaSpenderInit",
+      "Input": {
+        "recipient": "%joe_key%",
+        "amount": "1312d00",
+        "notes": "beta-tx-test"
+      },
+      "Regexp": "^\"(.{40,50})\"$"
+    },
+    {
+      "Time": 4000,
+      "Convey":"We should already have less funds",
+      "Zome": "transaction",
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "-1312d00",
+          "display": "-0.2"
+        },
+        "txFeeOwed": {
+          "system": "30d40",
+          "display": "0.002"
+        }
+      }
+    },
+    {
+      "Time": 9000,
+      "Convey":"We should now have less funds",
+      "Zome": "transaction",
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "-1312d00",
+          "display": "-0.2"
+        },
+        "txFeeOwed": {
+          "system": "30d40",
+          "display": "0.002"
+        }
+      }
+    }
+  ]
+}

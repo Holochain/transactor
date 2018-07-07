@@ -1,0 +1,32 @@
+{
+  "title": "alpha tx scheme - spender accept - schema",
+  "type": "object",
+  "properties": {
+    "spender": {
+      "type": "string",
+      "pattern": "^[\\S]{40,60}$"
+    },
+    "recipient": {
+      "type": "string",
+      "pattern": "^[\\S]{40,60}$"
+    },
+    "amount": {
+      "type": "string",
+      "pattern": "^-?[a-f0-9]{1,12}$"
+    },
+    "initRef": {
+      "type": "string",
+      "pattern": "^[\\S]{40,60}$"
+    },
+    "notes": {
+      "type": "string",
+      "pattern": "^.{0,512}$"
+    }
+  },
+  "required": [
+    "spender",
+    "recipient",
+    "amount",
+    "initRef"
+  ]
+}

@@ -177,12 +177,12 @@ object-assign
     }
   ],
   "paths": {
-    "/transaction/transactionCreate": {
+    "/transaction/txAlphaRecipientInit": {
       "post": {
         "tags": [
           "transaction"
         ],
-        "summary": "transactionCreate",
+        "summary": "txAlphaRecipientInit",
         "consumes": [
           "application/json"
         ],
@@ -194,90 +194,26 @@ object-assign
           "content": {
             "application/json": {
               "schema": {
-                "title": "input-transaction-read schema",
+                "title": "alpha tx scheme - recipient init - schema",
                 "type": "object",
-                "oneOf": [
-                  {
-                    "properties": {
-                      "role": {
-                        "type": "string",
-                        "pattern": "spender"
-                      },
-                      "to": {
-                        "type": "string"
-                      },
-                      "amount": {
-                        "type": "string",
-                        "pattern": "^-?[a-f0-9]{1,12}$"
-                      },
-                      "description": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "role",
-                      "to",
-                      "amount"
-                    ]
+                "properties": {
+                  "spender": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
                   },
-                  {
-                    "properties": {
-                      "role": {
-                        "type": "string",
-                        "pattern": "receiver"
-                      },
-                      "from": {
-                        "type": "string"
-                      },
-                      "amount": {
-                        "type": "string",
-                        "pattern": "^-?[a-f0-9]{1,12}$"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "preauth": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "role",
-                      "to",
-                      "amount",
-                      "preauth"
-                    ]
-                  }
-                ],
-                "examples": [
-                  {
-                    "role": "sender",
-                    "to": "receiver-hash-here",
-                    "amount": 12.5
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?[a-f0-9]{1,12}$"
                   },
-                  {
-                    "role": "receiver",
-                    "from": "sender-hash-here",
-                    "amount": 12.5,
-                    "preauth": "preauth-hash-here"
+                  "notes": {
+                    "type": "string",
+                    "pattern": "^.{0,512}$"
                   }
+                },
+                "required": [
+                  "spender",
+                  "amount"
                 ]
-              }
-            }
-          },
-          "examples": {
-            "default": {
-              "value": {
-                "role": "sender",
-                "to": "receiver-hash-here",
-                "amount": 12.5
-              }
-            },
-            "example_1": {
-              "value": {
-                "role": "receiver",
-                "from": "sender-hash-here",
-                "amount": 12.5,
-                "preauth": "preauth-hash-here"
               }
             }
           }
@@ -317,12 +253,12 @@ object-assign
         }
       }
     },
-    "/transaction/transactionRead": {
+    "/transaction/txAlphaSpenderAccept": {
       "post": {
         "tags": [
           "transaction"
         ],
-        "summary": "transactionRead",
+        "summary": "txAlphaSpenderAccept",
         "consumes": [
           "application/json"
         ],
@@ -334,15 +270,16 @@ object-assign
           "content": {
             "application/json": {
               "schema": {
-                "title": "input-transaction-read schema",
+                "title": "alpha tx scheme - spender accept - schema",
                 "type": "object",
                 "properties": {
-                  "transaction": {
-                    "type": "string"
+                  "initRef": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
                   }
                 },
                 "required": [
-                  "transaction"
+                  "initRef"
                 ]
               }
             }
@@ -354,31 +291,417 @@ object-assign
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "transaction schema",
+                  "title": "Stub Schema",
                   "type": "object",
                   "properties": {
-                    "from": {
-                      "type": "string"
-                    },
-                    "to": {
-                      "type": "string"
-                    },
-                    "amount": {
-                      "type": "string",
-                      "pattern": "^-?[a-f0-9]{1,12}$"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "preauth": {
+                    "stub": {
                       "type": "string"
                     }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txAlphaSpenderReject": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txAlphaSpenderReject",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "alpha tx scheme - spender reject - schema",
+                "type": "object",
+                "properties": {
+                  "initRef": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
+                  }
+                },
+                "required": [
+                  "initRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txBetaSpenderInit": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txBetaSpenderInit",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "beta tx scheme - spender init - schema",
+                "type": "object",
+                "properties": {
+                  "recipient": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
                   },
-                  "required": [
-                    "from",
-                    "to",
-                    "amount"
-                  ]
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?[a-f0-9]{1,12}$"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "pattern": "^.{0,512}$"
+                  }
+                },
+                "required": [
+                  "recipient",
+                  "amount"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txBetaRecipientAccept": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txBetaRecipientAccept",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "beta tx scheme - recipient accept - schema",
+                "type": "object",
+                "properties": {
+                  "initRef": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
+                  }
+                },
+                "required": [
+                  "initRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txBetaRecipientReject": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txBetaRecipientReject",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "beta tx scheme - recipient reject - schema",
+                "type": "object",
+                "properties": {
+                  "initRef": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
+                  }
+                },
+                "required": [
+                  "initRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txBetaSpenderWithdraw": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txBetaSpenderWithdraw",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "beta tx scheme - spender withdraw - schema",
+                "type": "object",
+                "properties": {
+                  "initRef": {
+                    "type": "string",
+                    "pattern": "^[\\S]{40,60}$"
+                  }
+                },
+                "required": [
+                  "initRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/txListPending": {
+      "post": {
+        "tags": [
+          "transaction"
+        ],
+        "summary": "txListPending",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "input-get-system-info schema",
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Stub Schema",
+                  "type": "object",
+                  "properties": {
+                    "stub": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }

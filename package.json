@@ -10,7 +10,7 @@
     "build-transaction-js": "rollup -c && babel -o dna/transaction/transaction.js dna-tmp/transaction.js",
     "build": "npm run build-transaction-js",
     "test": "standard --fix '**/*.js' && npm run build && dna-to-openapi -d ui/api-docs.html",
-    "hcdev-test": "hcdev test && hcdev scenario simple-transaction"
+    "hcdev-test": "hcdev test && hcdev scenario alpha-transaction && hcdev scenario alpha-transaction-reject && hcdev scenario beta-transaction"
   },
   "devDependencies": {
     "@holochain/dna-to-openapi": "^0.2.1",

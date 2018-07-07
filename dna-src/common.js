@@ -171,6 +171,16 @@ export function getMe () {
   return App.Key.Hash
 }
 
+/**
+ * For exported functions that take an amount as input
+ */
+export function validateHexAmount (amount) {
+  if (typeof amount !== 'string') {
+    throw new Error('"amount" must be a hexidecimal string')
+  }
+  return (new UnitValue(amount)).toString()
+}
+
 /*
 export function getCreditLimit () {
   // TODO - algorithm based on usage
@@ -208,65 +218,6 @@ export function isErr (result) {
 }
 
 /**
- * Check through a full history of amount deltas,
- * checking validation rules along the way.
- *
- * @param {array<object>} deltas - the "deltas"
- *        - these should include {
- *          amount: UnitValue,
- *          time: utc-epoch-millis, time of transaction
- *        }
- *
- * Throws an error if validation rules are not satisfied
- * otherwise
- * @return {UnitValue} the current balance of the account
- */
-export function validateHistoryDeltas (deltas) {
-  trace('validateHistoryDeltas', deltas)
-  let balance = new UnitValue(0)
-  let txFeeOwed = new UnitValue(0)
-
-  let curCreditLimit = new UnitValue('ba43b7400')
-  const maxTx = getMaxTransactionAmount()
-  // const maxFee = getMaxTransactionFee()
-  const txFeeFactor = getTransactionFeeFactor()
-
-  const validateNow = () => {
-    if (balance.gt(curCreditLimit)) {
-      throw new Error('over credit limit')
-    }
-    // TODO - see if we are over the transaction fee limit
-    //      - ... once we can actually pay transaction fees
-  }
-
-  const checkDelta = (delta) => {
-    if (delta.amount.abs().gt(maxTx)) {
-      throw new Error('over max transaction amount')
-    }
-
-    // TODO - set the credit limit for this point in history
-    curCreditLimit = new UnitValue('ba43b7400')
-
-    balance = balance.add(delta.amount)
-
-    if (delta.amount.lt(0)) {
-      txFeeOwed = txFeeOwed.add(delta.amount.mul(txFeeFactor))
-    }
-
-    validateNow()
-  }
-
-  for (let delta of deltas) {
-    checkDelta(delta)
-  }
-
-  return {
-    balance,
-    txFeeOwed
-  }
-}
-
-/**
  * Apparently, holochain-proto returns various time formats : /
  * worse... not all of them are parse-able by javascript.
  * Convert the non-parsable one into something that parses.
@@ -288,17 +239,18 @@ export function fixTime (t) {
 }
 
 /**
- * load up an array of in-s and out-s suitible for passing to validateHistoryDeltas
  */
-export function getLocalDeltas () {
-  const me = getMe()
-  const deltas = []
+export function listLocal () {
+  const thisHash = getMe()
+  const txList = []
 
   for (let entry of query({
     Constrain: {
       EntryTypes: [
-        'transaction',
-        'preauth'
+        'alphaRecipientInit',
+        'alphaSpenderAccept',
+        'betaSpenderInit',
+        'betaRecipientAccept'
       ]
     },
     Return: {
@@ -307,24 +259,159 @@ export function getLocalDeltas () {
       Headers: true
     }
   })) {
-    let amount = new UnitValue(entry.Entry.amount)
+    switch (entry.Header.Type) {
+      case 'alphaRecipientInit':
+      {
+        if (entry.Entry.recipient !== thisHash) {
+          continue
+        }
 
-    if (entry.Entry.to !== me) {
-      amount = amount.mul(-1)
+        const links = getLinks(entry.Hash, 'notify', { Load: true })
+
+        for (let item of links) {
+          switch (item.EntryType) {
+            case 'alphaSpenderAccept':
+              const tx = {
+                type: 'recipient',
+                time: fixTime(entry.Header.Time),
+                amount: new UnitValue(entry.Entry.amount),
+                spender: entry.Entry.spender
+              }
+              if (entry.Entry.notes) {
+                tx.notes = entry.Entry.notes
+              }
+              txList.push(tx)
+          }
+        }
+
+        break
+      }
+      case 'alphaSpenderAccept':
+      {
+        if (entry.Entry.spender !== thisHash) {
+          continue
+        }
+
+        const tx = {
+          type: 'spender',
+          time: fixTime(entry.Header.Time),
+          amount: new UnitValue(entry.Entry.amount),
+          recipient: entry.Entry.recipient
+        }
+        if (entry.Entry.notes) {
+          tx.notes = entry.Entry.notes
+        }
+        txList.push(tx)
+        break
+      }
+      case 'betaSpenderInit':
+      {
+        if (entry.Entry.spender !== thisHash) {
+          continue
+        }
+
+        const links = getLinks(entry.Hash, 'notify', { Load: true })
+
+        for (let item of links) {
+          switch (item.EntryType) {
+            case 'betaRecipientReject':
+              continue
+            case 'betaSpenderWithdraw':
+              continue
+          }
+        }
+
+        const tx = {
+          type: 'spender',
+          time: fixTime(entry.Header.Time),
+          amount: new UnitValue(entry.Entry.amount),
+          recipient: entry.Entry.recipient
+        }
+        if (entry.Entry.notes) {
+          tx.notes = entry.Entry.notes
+        }
+        txList.push(tx)
+
+        break
+      }
+      case 'betaRecipientAccept':
+      {
+        if (entry.Entry.recipient !== thisHash) {
+          continue
+        }
+
+        const tx = {
+          type: 'recipient',
+          time: fixTime(entry.Header.Time),
+          amount: new UnitValue(entry.Entry.amount),
+          spender: entry.Entry.spender
+        }
+        if (entry.Entry.notes) {
+          tx.notes = entry.Entry.notes
+        }
+        txList.push(tx)
+        break
+      }
     }
-
-    deltas.push({
-      amount,
-      time: fixTime(entry.Header.Time)
-    })
   }
 
-  return deltas
+  return txList
+}
+
+/**
+ */
+export function validateLedgerState (txList) {
+  trace('validateLedgerState', txList)
+  let balance = new UnitValue(0)
+  let txFeeOwed = new UnitValue(0)
+
+  let curCreditLimit = new UnitValue('ba43b7400')
+  const maxTx = getMaxTransactionAmount()
+  // const maxFee = getMaxTransactionFee()
+  const txFeeFactor = getTransactionFeeFactor()
+
+  const validateNow = () => {
+    if (balance.gt(curCreditLimit)) {
+      throw new Error('over credit limit')
+    }
+    // TODO - see if we are over the transaction fee limit
+    //      - ... once we can actually pay transaction fees
+  }
+
+  const checkDelta = (tx) => {
+    if (tx.amount.abs().gt(maxTx)) {
+      throw new Error('over max transaction amount')
+    }
+
+    // TODO - set the credit limit for this point in history
+    curCreditLimit = new UnitValue('ba43b7400')
+
+    switch (tx.type) {
+      case 'spender':
+        balance = balance.sub(tx.amount)
+        txFeeOwed = txFeeOwed.add(tx.amount.mul(txFeeFactor))
+        break
+      case 'recipient':
+        balance = balance.add(tx.amount)
+        break
+      default:
+        throw new Error('unrecognized tx.type: ' + tx.type)
+    }
+
+    validateNow()
+  }
+
+  txList.map(checkDelta)
+
+  return {
+    balance,
+    txFeeOwed
+  }
 }
 
 /**
  * Get the current balance of the local identity
  */
 export function getLedgerState () {
-  return validateHistoryDeltas(getLocalDeltas())
+  return validateLedgerState(listLocal())
 }
