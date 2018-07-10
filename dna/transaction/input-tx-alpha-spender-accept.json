@@ -1,0 +1,13 @@
+{
+  "title": "alpha tx scheme - spender accept - schema",
+  "type": "object",
+  "properties": {
+    "initRef": {
+      "type": "string",
+      "pattern": "^[\\S]{40,60}$"
+    }
+  },
+  "required": [
+    "initRef"
+  ]
+}

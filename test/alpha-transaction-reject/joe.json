@@ -1,0 +1,78 @@
+{
+  "Tests":[
+    {
+      "Time": 100,
+      "Convey": "We should start with a zero balance",
+      "Zome": "transaction",
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "0",
+          "display": "0"
+        },
+        "txFeeOwed": {
+          "system": "0",
+          "display": "0"
+        }
+      }
+    },
+    {
+      "Time": 200,
+      "Convey": "We should be able to fetch our own hash",
+      "Zome": "transaction",
+      "FnName": "getSystemInfo",
+      "Output": {
+        "selfHash": "%key%",
+        "maxTransactionAmount": {
+          "system": "47868c00",
+          "display": "12"
+        },
+        "maxTransactionFee": {
+          "system": "1dcd6500",
+          "display": "5"
+        },
+        "transactionFeeFactor": 0.01
+      }
+    },
+    {
+      "Time": 3000,
+      "Convey":"find the alpha init from jane",
+      "Zome": "transaction",
+      "Input": "Object.keys(txListPending().alpha)[0]",
+      "Raw": true,
+      "Regexp": "^(.{40,50})$"
+    },
+    {
+      "Time": 5000,
+      "Convey":"reject jane's alpha init",
+      "Zome": "transaction",
+      "Input": "txAlphaSpenderReject({initRef: '%m1.0%'})",
+      "Raw": true,
+      "Regexp": "^(.{40,50})$"
+    },
+    {
+      "Time": 9000,
+      "Convey":"We should still have a zero balance",
+      "Zome": "transaction",
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "0",
+          "display": "0"
+        },
+        "txFeeOwed": {
+          "system": "0",
+          "display": "0"
+        }
+      }
+    },
+    {
+      "Time": 9100,
+      "Convey":"list pending should be empty",
+      "Zome": "transaction",
+      "Input": "Object.keys(txListPending().alpha).length",
+      "Raw": true,
+      "Output": 0
+    }
+  ]
+}

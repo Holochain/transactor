@@ -8,8 +8,16 @@
     "language": {
       "type": "string"
     },
-    "creditLimit": {
-      "type":"integer"
+    "maxTransactionAmount": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{1,12}$"
+    },
+    "maxTransactionFee": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{1,12}$"
+    },
+    "transactionFeeFactor": {
+      "type": "number"
     }
   }
 }

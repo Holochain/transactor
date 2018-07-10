@@ -3,14 +3,34 @@
     {
       "Convey": "We should start with a zero balance",
       "Zome": "transaction",
-      "FnName": "getBalance",
-      "Output": 0
+      "FnName": "getLedgerState",
+      "Output": {
+        "balance": {
+          "system": "0",
+          "display": "0"
+        },
+        "txFeeOwed": {
+          "system": "0",
+          "display": "0"
+        }
+      }
     },
     {
       "Convey": "We should be able to fetch our own hash",
       "Zome": "transaction",
-      "FnName": "getSelfHash",
-      "Output": "%key%"
+      "FnName": "getSystemInfo",
+      "Output": {
+        "selfHash": "%key%",
+        "maxTransactionAmount": {
+          "system": "47868c00",
+          "display": "12"
+        },
+        "maxTransactionFee": {
+          "system": "1dcd6500",
+          "display": "5"
+        },
+        "transactionFeeFactor": 0.01
+      }
     }
   ]
 }

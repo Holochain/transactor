@@ -9,7 +9,9 @@
     "Properties": {
         "description": "Asset backed mutual-credit currency built on holochain",
         "language": "en",
-        "creditLimit":"500"
+        "maxTransactionAmount": "47868c00",
+        "maxTransactionFee": "1dcd6500",
+        "transactionFeeFactor": "0.01"
     },
     "PropertiesSchemaFile": "properties_schema.json",
     "Zomes": [
@@ -19,47 +21,122 @@
             "CodeFile": "transaction.js",
             "Entries": [
                 {
-                    "Name": "transaction",
+                    "Name": "notify",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "alphaRecipientInit",
                     "DataFormat": "json",
-                    "Schema": "",
-                    "SchemaFile": "transaction.json",
+                    "SchemaFile": "alpha-recipient-init.json",
                     "Sharing": "public"
                 },
                 {
-                    "Name": "preauth",
+                    "Name": "alphaSpenderAccept",
                     "DataFormat": "json",
-                    "Schema": "",
-                    "SchemaFile": "preauth.json",
+                    "SchemaFile": "alpha-spender-accept.json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "alphaSpenderReject",
+                    "DataFormat": "json",
+                    "SchemaFile": "alpha-spender-reject.json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "betaSpenderInit",
+                    "DataFormat": "json",
+                    "SchemaFile": "beta-spender-init.json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "betaRecipientAccept",
+                    "DataFormat": "json",
+                    "SchemaFile": "beta-recipient-accept.json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "betaRecipientReject",
+                    "DataFormat": "json",
+                    "SchemaFile": "beta-recipient-reject.json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "betaSpenderWithdraw",
+                    "DataFormat": "json",
+                    "SchemaFile": "beta-spender-withdraw.json",
                     "Sharing": "public"
                 }
             ],
             "RibosomeType": "js",
             "Functions": [
                 {
-                    "Name": "transactionCreate",
+                    "Name": "txAlphaRecipientInit",
                     "CallingType": "json",
-                    "InputSchemaFile": "input-transaction-create.json",
-                    "ReturnType": "string",
-                    "Exposure": "public"
-                },
-                {
-                    "Name": "transactionRead",
-                    "CallingType": "json",
-                    "InputSchemaFile": "input-transaction-read.json",
+                    "InputSchemaFile": "input-tx-alpha-recipient-init.json",
                     "ReturnType": "json",
-                    "OutputSchemaFile": "transaction.json",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "getSelfHash",
-                    "CallingType": "string",
-                    "ReturnType": "string",
+                    "Name": "txAlphaSpenderAccept",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-alpha-spender-accept.json",
+                    "ReturnType": "json",
                     "Exposure": "public"
                 },
                 {
-                    "Name": "getBalance",
-                    "CallingType": "string",
-                    "ReturnType": "string",
+                    "Name": "txAlphaSpenderReject",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-alpha-spender-reject.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "txBetaSpenderInit",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-beta-spender-init.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "txBetaRecipientAccept",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-beta-recipient-accept.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "txBetaRecipientReject",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-beta-recipient-reject.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "txBetaSpenderWithdraw",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-tx-beta-spender-withdraw.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "txListPending",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-no-params.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "getSystemInfo",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-no-params.json",
+                    "ReturnType": "json",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "getLedgerState",
+                    "CallingType": "json",
+                    "InputSchemaFile": "input-no-params.json",
+                    "ReturnType": "json",
                     "Exposure": "public"
                 }
             ]
